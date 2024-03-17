@@ -26,7 +26,6 @@ Route::get('c',[CardController::class,'c']);
 //register and login for admin
     Route::post('register/admin',[AdminController::class,'register']);
     Route::post('login/admin',[AdminController::class,'login']);
-
 Route::group(['middleware'=>['auth:sanctum']],function (){
     Route::get('logout',[UserController::class,'logout']);
     Route::get('logout/admin',[AdminController::class,'logout']);
