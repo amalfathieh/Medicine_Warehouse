@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\MedicineRequest;
 use App\Models\Catogary;
 use App\Models\User;
 use App\Models\Favorite;
@@ -12,18 +13,8 @@ use Illuminate\Support\Facades\DB;
 class MedicineController extends Controller
 {
     // ADD MEDICINE
-    public function create(Request $request)
+    public function create(MedicineRequest $request)
     {
-        $request->validate([
-            'scientific_name' => ['required'],
-            'commercial_name' => ['required'],
-            'company' => ['required'],
-            'quantity' => ['required'],
-            'date' => ['required'],
-            'price' => ['required'],
-            'image' => ['image', 'mimes:jpeg,png,bmp,jpg,gif,sav'],
-        ]);
-
         $image = $request->file('image');
         $medicine_image = 'image/1546140.png';
         if ($request->hasFile('image')) {
@@ -52,13 +43,23 @@ class MedicineController extends Controller
     // GET ALL CATOGARY
     public function getCatogary()
     {
-        return Catogary::get();
+        $gatogary = Catogary::get();
+        return response()->json([
+            'data' => $gatogary,
+            'message'=>'success',
+            'status'=> 200
+        ], 200);
     }
 
     // GET ALL MEDICINES
     public function getAllMedicine()
     {
-        return Medicine::with('catogary')->get();
+        $medicines = Medicine::with('catogary')->get();
+        return response()->json([
+            'data' => $medicines,
+            'message'=>'success',
+            'status'=> 200
+        ], 200);
     }
 
     public function date($id)
@@ -72,63 +73,43 @@ class MedicineController extends Controller
     public function showMedicine($id)
     {
         $catogary = Catogary::find($id);
-        return $catogary->medicines;
-    }
-
-    //ADD MEDICIN TO FAVORIT
-    public function favorite($id){
-        $idU=auth()->user()->id;
-        $f=Favorite::where('medicine_id',$id)->get();
-        if($f){
-        foreach($f as $data){
-            if( $data->user_id == $idU){
-                return response()->json([
-                    'message'=>'The medicine already existed in favorite '
-                ],422);
-            }
-       }}
-        Favorite::create([
-            'medicine_id'=>$id,
-            'user_id'=>$idU,
-        ]);
+        $medicines = $catogary->medicines;
         return response()->json([
-            'message'=>'The medicine was added to favorite successfully'
-        ],200);
-    }
+            'data' => $medicines,
+            'message'=>'success',
+            'status'=> 200
+        ], 200);
 
-    //Delete from favorite
-    public function Deletefavorite($id){
-        Favorite::where('medicine_id',$id)->delete();
-        return response()->json([
-            'message'=>'The medicine delete from favorite successfully'
-        ],200);
-    }
-    //SHOW ALL MEDICIN IN FAVORITE
-    public function showFavorite(){
-        $id=auth()->user()->id;
-        $user=User::find($id);
-        return $user->medicines;
     }
 
     //SEARCH BY NAME(SCIENTIFIC OR COMMERCAL) OR CATOGARY
     public function search_catogary_or_name($x)
     {
-        $ca = Catogary::where('catogary', '=', $x)->first();
-        if ($ca) {
-            $po = $ca->id;
-            $catogary = Catogary::find($po);
-        }
-        $medicine = Medicine::where('scientific_name', '=', $x)->first();
-        $medicine1 = Medicine::where('commercial_name', '=', $x)->first();
+        $catogary = Catogary::where('catogary', $x)->first();
+        $medicinesCatogary = $catogary->medicines;
+        $medicine = Medicine::where('scientific_name', $x)->first();
+        $medicine1 = Medicine::where('commercial_name', $x)->first();
 
         if ($medicine) {
-            return $medicine;
+            return response()->json([
+                'data' => $medicine,
+                'message'=>'success',
+                'status'=> 200
+            ], 200);
         }
         if ($medicine1) {
-            return $medicine1;
+            return response()->json([
+                'data' => $medicine1,
+                'message'=>'success',
+                'status'=> 200
+            ], 200);
         }
         if ($catogary) {
-            return $catogary;
+            return response()->json([
+                'data' => $catogary,
+                'message'=>'success',
+                'status'=> 200
+            ], 200);
         } else return response()->json([
             'status' => 0,
             'data' => null,

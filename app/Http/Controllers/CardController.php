@@ -2,74 +2,87 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Requests\OrderRequest;
 use App\Models\Card;
 use App\Models\Medicine;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 use function PHPUnit\Framework\returnSelf;
 
 class CardController extends Controller
 {
+    public function addOrder(OrderRequest $request){
+        $orderMedicines =  $request->validated();
 
-    public function addOrder(Request $request){
-         $orderMedicines =  $request->all();
-        //  $request->validate([
-        //     'medicines'=>'required|array',
-        //     'medicines.*.medicine_name'=>'required',
-        //     'medicines.*.quantity'=>'required|integer',
-        //   ]);
-//return $orderMedicines;
-         foreach ($request->all() as $va) {
-             $quantity=$va['quantity'];
-             $mName =$va['medicine_name'];
-             $medicine=Medicine::where('commercial_name','=',$mName)->first();
-             $q=$medicine->quantity;
-             if($quantity>$q){
-                 return response()->json([
-                     'message'=>"quantity of $mName is not avilabile"
-                 ],400);
-             }
-         }
-        $card=Card::query()->create([
-            'user_id'=> auth()->user()->id,
-            'send_status'=>'sending',
-            'payment_status'=>'unpaid',
-            ]);
-        $id=$card->id;
+        foreach ($orderMedicines['orderMedicines'] as $va) {
+            $quantity = $va['quantity'];
+            $mName = $va['medicine_name'];
+            $medicine = Medicine::where('commercial_name', $mName)->first();
+            $q = $medicine->quantity;
+            if ($quantity > $q) {
+                return response()->json([
+                    'data' => null,
+                    'message' => "quantity of $mName is not available"
+                ], 400);
+            }
+        }
 
-        foreach ($orderMedicines as $order) {
+        $card = Card::query()->create([
+            'user_id' => auth()->user()->id,
+            'send_status' => 'sending',
+            'payment_status' => 'unpaid',
+        ]);
+        $id = $card->id;
+
+        foreach ($orderMedicines['orderMedicines'] as $order) {
             Order::create([
                 'card_id' => $id,
                 'medicine_name' => $order['medicine_name'],
                 'quantity' => $order['quantity'],
             ]);
         }
+
         return response()->json([
-            'message'=>'The order was added successfully'
-        ],200);
+            'data' => null,
+            'message' => 'The order was added successfully'
+        ], 200);
     }
 
     //SHOW USER ORDER
     public function showOrder(){
         $id=auth()->user()->id;
         $user=User::find($id);
-        return $user->cards;
+        $cards = $user->cards;
+        return response()->json([
+            'data' => $cards,
+            'message'=>'success',
+            'status'=> 200
+        ], 200);
         }
 
     //SHOW ALL ORDERS
     public function showAllOrder(){
-       return Card::get();
+       $cards = Card::get();
+        return response()->json([
+            'data' => $cards,
+            'message'=>'success',
+            'status'=> 200
+        ], 200);
+
     }
 
     //SHOW ALL ORDER'S MEDICINE////////////////////////////////////////
     public function showMedOrder($id){
          $card=Card::query()->find($id);
-         return $card->orders;
+        $orders =  $card->orders;
+        return response()->json([
+            'data' => $orders,
+            'message'=>'success',
+            'status'=> 200
+        ], 200);
     }
 
     //UPDATE STATUS CARD
@@ -94,7 +107,11 @@ class CardController extends Controller
                  ]);
             }
         }
-        return "the order updated successfully";
+        return response()->json([
+            'data' => null,
+            'message'=> "the order updated successfully",
+            'status'=> 200
+        ], 200);
     }
 
 public function f(Request $request){

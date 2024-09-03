@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Requests\RegisterRequest;
+use App\services\AuthService;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use http\Env\Response;
@@ -9,14 +11,10 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+
     //REGISTER METHOD -POST
-    public function register(Request $request): \Illuminate\Http\JsonResponse
+    public function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
     {
-        $request->validate([
-            'name'=>['required'],
-            'phone'=>['required','digits:10','unique:users,phone'],
-            'password'=>['required']
-        ]);
         $user=User::query()->create([
             'name'=>$request['name'],
             'phone'=>$request['phone'],
@@ -28,32 +26,17 @@ class UserController extends Controller
         $data['user']= $user;
         $data['token']=$token;
         return response()->json([
-           'status'=>1,
            'data'=>$data,
-           'message'=>'user create successfully'
+           'message'=>'user create successfully',
+            'status'=>1
         ]);
 
     }
 
     //LOGIN METHOD -POST
-    public function login(Request $request){
-        $request->validate([
-            'phone'=>['required','digits:10','exists:users,phone'],
-            'password'=>['required']
-        ]);
-        if(!Auth::attempt($request->only(['phone','password']))){
-            $message='Mobile phone & password does not match with our record.';
-            return response()->json([
-                'data'=>[],
-                'status'=>0,
-                'message'=>$message
-            ],500);
-        }
-        $user=User::query()->where('phone','=',$request['phone'] )->first();
-        $token = $user->createToken("API TOKEN")->plainTextToken;
-        $data['user']=$user;
+    public function login(Request $request , AuthService $authService){
 
-        $data['token']=$token;
+        $data = $authService->login($request);
 
         return response()->json([
             'status'=>1,
@@ -63,9 +46,9 @@ class UserController extends Controller
     }
 
     //LOGOUT METHOD -GET
-    public function logout(): \Illuminate\Http\JsonResponse
+    public function logout(AuthService $authService): \Illuminate\Http\JsonResponse
     {
-    Auth::user()->currentAccessToken()->delete();
+        $authService->logout();
     return response()->json([
         'status'=>1,
         'data'=>[],
