@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegisterRequest;
 use App\services\AuthService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -14,42 +15,42 @@ class AdminController extends Controller
     //REGISTER METHOD -POST
     public function register(RegisterRequest $request): \Illuminate\Http\JsonResponse
     {
-        $admin=User::query()->create([
+        $user=User::query()->create([
             'name'=>$request['name'],
             'phone'=>$request['phone'],
             'password'=>Hash::make($request->password),
-            'role'=>'admin',
+            'role'=>'user',
         ]);
-        $token=$admin->createToken("API TOKEN")->plainTextToken;
-        $data =[];
-        $data['user']= $admin;
-        $data['token']=$token;
-        return response()->json([
-           'data'=>$data,
-           'message'=>'Admin create successfully',
-           'status'=>1,
-        ]);
+        $token=$user->createToken("API TOKEN")->plainTextToken;
+
+        return $this->success([
+            'user' => $user,
+            'token'=> $token
+        ],'Admin has been register successfully');
 
     }
 
     //LOGIN METHOD -POST
     public function login(Request $request , AuthService $authService){
-        $data = $authService->login($request);
-        return response()->json([
-            'data'=>$data,
-            'message'=>'Admin logged in successfully',
-            'status'=>1,
-        ]);
+        $isValid = $authService->isValidCredential($request);
+        if(!$isValid['success']){
+            return $this->error($isValid['message'] , Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $user = $isValid['user'];
+        $token = $user->createToken("API TOKEN")->plainTextToken;
+
+        return $this->success([
+            'user' => $user,
+            'token'=> $token
+        ], 'Admin logged in successfully');
+
     }
 
     //LOGOUT METHOD -GET
     public function logout(AuthService $authService): \Illuminate\Http\JsonResponse
     {
         $authService->logout();
-        return response()->json([
-            'data'=>[],
-            'message'=>'Admin logged out successfully',
-            'status'=>1,
-            ]);
+        return $this->success(null , 'Logout successfully');
     }
 }

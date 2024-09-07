@@ -9,26 +9,24 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthService
 {
-    public function login($request){
+    public function isValidCredential($request)
+    {
         $request->validate([
             'phone'=>['required','digits:10','exists:users,phone'],
             'password'=>['required']
         ]);
         if(!Auth::attempt($request->only(['phone','password']))){
             $message='Mobile phone & password does not match with our record.';
-            return response()->json([
-                'data'=>[],
-                'status'=>0,
+            return [
+                'success'=>false,
                 'message'=>$message
-            ],500);
+            ];
         }
-        $user=User::query()->where('phone','=',$request['phone'] )->first();
-        $token = $user->createToken("API TOKEN")->plainTextToken;
-        $data['user']=$user;
-
-        $data['token']=$token;
-
-        return $data;
+        $user=User::query()->where('phone',$request['phone'] )->first();
+        return [
+            'success'=>true,
+            'user'=>$user,
+        ];
     }
 
     public function logout(){

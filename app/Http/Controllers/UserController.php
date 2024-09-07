@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 use App\Http\Requests\RegisterRequest;
 use App\services\AuthService;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,36 +22,35 @@ class UserController extends Controller
             'role'=>'user',
         ]);
         $token=$user->createToken("API TOKEN")->plainTextToken;
-        $data =[];
-        $data['user']= $user;
-        $data['token']=$token;
-        return response()->json([
-           'data'=>$data,
-           'message'=>'user create successfully',
-            'status'=>1
-        ]);
+
+        return $this->success([
+            'user'=>$user,
+            'token' => $token
+        ],'User has been register successfully');
 
     }
 
     //LOGIN METHOD -POST
     public function login(Request $request , AuthService $authService){
+        $isValid = $authService->isValidCredential($request);
+        if(!$isValid['success']){
+            return $this->error($isValid['message'] , Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
-        $data = $authService->login($request);
+        $user = $isValid['user'];
+        $token = $user->createToken("API TOKEN")->plainTextToken;
 
-        return response()->json([
-            'status'=>1,
-            'data'=>$data,
-            'message'=>'user logged in successfully'
-        ]);
+        return $this->success([
+            'user' => $user,
+            'token'=> $token
+        ], 'user logged in successfully');
+
     }
 
     //LOGOUT METHOD -GET
     public function logout(AuthService $authService): \Illuminate\Http\JsonResponse
     {
         $authService->logout();
-    return response()->json([
-        'status'=>1,
-        'data'=>[],
-        'message'=>'user logged out successfully' ]);
+        return $this->success(null , 'Logout successfully');
     }
 }
