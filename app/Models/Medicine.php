@@ -11,9 +11,9 @@ class Medicine extends Model
 
     protected $guarded=[];
 
-    public function catogary()
+    public function category()
         {
-            return $this->belongsTo(Catogary::class);
+            return $this->belongsTo(Category::class);
         }
 
     public function orders()

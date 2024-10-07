@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
-class Catogary extends Model
+class Category extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'catogary',
+        'category',
     ];
 
     public function medicines(): HasMany

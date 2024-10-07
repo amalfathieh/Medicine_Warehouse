@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('scientific_name');
             $table->string('commercial_name');
-            $table->foreignId('catogary_id')
-                ->constrained('catogaries')
+            $table->foreignId('category_id')
+                ->constrained('categories')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
             $table->string('company');

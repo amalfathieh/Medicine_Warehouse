@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Catogary;
+use App\Models\Category;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class CarogarySeeder extends Seeder
+class CategorySeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,11 +16,11 @@ class CarogarySeeder extends Seeder
      */
     public function run()
     {
-        $catogary_names = ['Antibiotic', 'Antiviral', 'Antihypertensive', 'Anti-inflammatory', 'Immune stimulant'
+        $category_names = ['Antibiotic', 'Antiviral', 'Antihypertensive', 'Anti-inflammatory', 'Immune stimulant'
             , 'Antifungal', 'Antidepressant', 'Antihistamine', 'Analgesic', 'Dietary supplement'];
         for ($i = 0; $i < 10; $i++) {
-            Catogary::query()->create([
-                'catogary' => $catogary_names[$i],
+            Category::query()->create([
+                'category' => $category_names[$i],
             ]);
         }
         }

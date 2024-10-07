@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MedicineRequest;
-use App\Models\Catogary;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\Favorite;
 use App\Models\Medicine;
@@ -26,7 +26,7 @@ class MedicineController extends Controller
         $medicine = Medicine::query()->create([
             'scientific_name' => $request['scientific_name'],
             'commercial_name' => $request['commercial_name'],
-            'catogary_id' => $request['catogary_id'],
+            'category_id' => $request['category_id'],
             'company' => $request['company'],
             'quantity' => $request['quantity'],
             'date' => $request['date'],
@@ -40,10 +40,10 @@ class MedicineController extends Controller
             'message' => 'The medicine was added successfully'
         ]);
     }
-    // GET ALL CATOGARY
-    public function getCatogary()
+    // GET ALL category
+    public function getcategory()
     {
-        $gatogary = Catogary::get();
+        $gatogary = Category::get();
         return response()->json([
             'data' => $gatogary,
             'message'=>'success',
@@ -54,7 +54,7 @@ class MedicineController extends Controller
     // GET ALL MEDICINES
     public function getAllMedicine()
     {
-        $medicines = Medicine::with('catogary')->get();
+        $medicines = Medicine::with('category')->get();
         return response()->json([
             'data' => $medicines,
             'message'=>'success',
@@ -69,11 +69,11 @@ class MedicineController extends Controller
     }
 
 
-    //SHOW MEDICINE BY CATOGARY
+    //SHOW MEDICINE BY category
     public function showMedicine($id)
     {
-        $catogary = Catogary::find($id);
-        $medicines = $catogary->medicines;
+        $category = Category::find($id);
+        $medicines = $category->medicines;
         return response()->json([
             'data' => $medicines,
             'message'=>'success',
@@ -82,38 +82,34 @@ class MedicineController extends Controller
 
     }
 
-    //SEARCH BY NAME(SCIENTIFIC OR COMMERCAL) OR CATOGARY
-    public function search_catogary_or_name($x)
-    {
-        $catogary = Catogary::where('catogary', $x)->first();
-        $medicinesCatogary = $catogary->medicines;
-        $medicine = Medicine::where('scientific_name', $x)->first();
-        $medicine1 = Medicine::where('commercial_name', $x)->first();
+    //SEARCH BY NAME(SCIENTIFIC OR COMMERCAL) OR category
 
-        if ($medicine) {
+    public function searchCategoryOrName($x)
+    {
+        $categories = Category::where('category', 'like', '%' . $x . '%')->with('medicines')->get();
+
+        $medicines = Medicine::where('scientific_name', 'like', '%' . $x . '%')
+            ->orWhere('commercial_name', 'like', '%' . $x . '%')
+            ->get();
+
+        // تجميع النتائج
+        $results = [
+            'categories' => $categories,
+            'medicines' => $medicines,
+        ];
+
+        if ($results['categories']->isNotEmpty() || $results['medicines']->isNotEmpty()) {
             return response()->json([
-                'data' => $medicine,
-                'message'=>'success',
-                'status'=> 200
+                'data' => $results,
+                'message' => 'Success',
+                'status' => 200
             ], 200);
         }
-        if ($medicine1) {
-            return response()->json([
-                'data' => $medicine1,
-                'message'=>'success',
-                'status'=> 200
-            ], 200);
-        }
-        if ($catogary) {
-            return response()->json([
-                'data' => $catogary,
-                'message'=>'success',
-                'status'=> 200
-            ], 200);
-        } else return response()->json([
+        return response()->json([
             'status' => 0,
             'data' => null,
-            'message' => 'The medicine not exiest',
+            'message' => 'No matching items found',
         ]);
     }
+
 }

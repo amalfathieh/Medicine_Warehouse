@@ -32,7 +32,7 @@ class MedicineSeeder extends Seeder
             "Merck",
             "Prednisone Intensol"," Rayos", "Sterapred", "Deltasone"," Orasone"," Prednicen-M", "Liquid Pred"];
         $commercial_name = ['Advil', 'Amoxil', 'Zithromax', 'Tamiflu', 'Zovirax', 'Norvasc', 'Cozaar', 'Tylenol', 'Prozac'];
-        $catogary_id = [4, 1, 1, 2, 2, 3, 3, 9, 7];
+        $category_id = [4, 1, 1, 2, 2, 3, 3, 9, 7];
         $company = ['Egyptian Drug Company (EDC)', 'Pfizer', 'Roche', 'GlaxoSmithKline', 'Pfizer', 'Merck', 'Pfizer', 'Egyptian Drug Company (EDC)', 'Eli Lilly'];
         $quantity = [100, 50, 500, 35, 40, 160, 40, 37, 15];
         $date = ['2024-03-01', '2024-01-01', '2023-12-01', '2024-01-01', '2024-04-01', '2024-03-01', '2024-06-05', '2025-11-10', '2024-4-1'];
@@ -43,7 +43,7 @@ class MedicineSeeder extends Seeder
             Medicine::create([
                 'scientific_name' => $scientific_name[$i],
                 'commercial_name' => $commercial_name[$i],
-                'catogary_id' => $catogary_id[$i],
+                'category_id' => $category_id[$i],
                 'company' => $company[$i],
                 'quantity' => $quantity[$i],
                 'date' => $date[$i],
